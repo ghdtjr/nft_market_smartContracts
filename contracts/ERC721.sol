@@ -40,7 +40,16 @@ contract ERC721 is IERC721 {
         return(_tokenIdtoOwner[tokenId]);
     }
 
-    function _transferFrom(address from, address to, uint256 tokenId) internal {
+    function _transfer(address from, address to, uint256 tokenId) internal {
+        require(valid_addr(to), "ERC721.sol: to address is not valid");
+        require(ownerOf(tokenId) == from, "ERC721.sol: the token is not beloning to from address");
+
+        _tokenIdtoOwner[tokenId] = to;
+
+        _balances[from]--;
+        _balances[to]++;
+        
+        emit Transfer(from, to, tokenId);
     }
 
     /**
