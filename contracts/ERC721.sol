@@ -24,6 +24,8 @@ contract ERC721 is IERC721 {
      * @dev Returns the number of tokens in ``owner``'s account.
      */
     function balanceOf(address owner) public view override returns (uint256 balance) {
+        require(valid_addr(owner), "ERC721.sol: owner address is not valid");
+        return(_balances[owner]);
     }
 
     /**
@@ -38,7 +40,7 @@ contract ERC721 is IERC721 {
         return(_tokenIdtoOwner[tokenId]);
     }
 
-    function _transferFrom(address from, address to, uint256 tokenId) private {
+    function _transferFrom(address from, address to, uint256 tokenId) internal {
     }
 
     /**
@@ -149,7 +151,7 @@ contract ERC721 is IERC721 {
      *
      * @param _owner address of the future owner of the token
      */
-    function _mint(address _owner, uint256 _tokenId) private {
+    function _mint(address _owner, uint256 _tokenId) internal {
         require(valid_addr(_owner), "ERC721.sol: _owner address is not valid");
         require(!valid_tokenId(_tokenId), "ERC721.sol: _tokenId already exists");
 
