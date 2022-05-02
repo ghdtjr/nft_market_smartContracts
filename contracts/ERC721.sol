@@ -34,6 +34,8 @@ contract ERC721 is IERC721 {
      * - `tokenId` must exist.
      */
     function ownerOf(uint256 tokenId) public view override returns (address owner) {
+        require(valid_tokenId(tokenId), "ERC721.sol: _tokenId is not a valid value");
+        return(_tokenIdtoOwner[tokenId]);
     }
 
     function _transferFrom(address from, address to, uint256 tokenId) private {
