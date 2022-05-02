@@ -16,7 +16,7 @@ contract ERC721 is IERC721 {
     // for approval function
     mapping (uint256 => address) private _tokenApprovals;
 
-    mapping (uint256 => string) private _tokenURIs; 
+    mapping (uint256 => string) private _tokenURIs;
 
     uint256 private _tokenIdcnt = 0;
 
@@ -142,11 +142,17 @@ contract ERC721 is IERC721 {
      *
      * Requirements:
      *
-     * - `to` cannot be the zero address.
+     * - `owner` cannot be the zero address.
+     * - `tokenId` must not exist.
      *
-     * @param _to address of the future owner of the token
+     * @param _owner address of the future owner of the token
      */
-    function _mint(address _to, string memory _URI) public {
+    function _mint(address _owner, uint256 _tokenId) private {
+        require(valid_addr(_owner), "ERC721.sol: _owner address is not valid");
+        require(!valid_tokenId(_tokenId), "ERC721.sol: _tokenId already exists");
+
+        _tokenIdtoOwner[_tokenId] = _owner;
+        _balances[_owner]++;
     }
 
     /**
@@ -154,16 +160,31 @@ contract ERC721 is IERC721 {
      *
      * Requirements:
      *
-     * - `tokenId` must not exist.
-     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.
+     * - `owner` cannot be the zero address.
      *
      * Emits a {Transfer} event.
      */
-    function _safeMint(address _to, uint256 _tokenId) internal virtual {
+    function _safeMint(address _owner, string memory _uri) public virtual {
+        require(valid_addr(_owner), "ERC721.sol: _owner address is not valid");
+        uint256 new_tokenId = _tokenIdcnt;
+        _tokenIdcnt++;
+
+        _tokenURIs[new_tokenId] = _uri;
+
+        _mint(_owner, new_tokenId);
     }
 
     function supportsInterface(bytes4 interfaceId) public view override returns (bool){
 
+    }
+
+    // if the _addr is valid return true 
+    function valid_addr(address _addr) private pure returns (bool) {
+        return _addr != address(0);
+    }
+
+    function valid_tokenId(uint256 _tokenId) private view returns (bool) {
+        return _tokenIdtoOwner[_tokenId] != address(0);
     }
 
 }
