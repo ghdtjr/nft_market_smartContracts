@@ -56,8 +56,32 @@ contract ERC721 is IERC721 {
         emit Transfer(from, to, tokenId);
     }
 
+    /**
+     * @dev Transfers `tokenId` token from `from` to `to`.
+     *
+     * WARNING: Usage of this method is discouraged, use {safeTransferFrom} whenever possible.
+     *
+     * Requirements:
+     *
+     * - `from` cannot be the zero address.
+     * - `to` cannot be the zero address.
+     * - `tokenId` token must be owned by `from`.
+     * - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}.
+     *
+     * Emits a {Transfer} event.
+     */
+    function transferFrom(address from, address to, uint256 tokenId) public override {
+        require(is_owner_operator(msg.sender, ownerOf(tokenId)), "ERC721.sol: caller is not a owner or approved operator");
 
-    function safeTransferFrom(address from, address to, uint256 tokenId) public virtual override {
+        _transfer(from, to, tokenId);
+
+    }
+    /**
+     * @dev See {IERC721-safeTransferFrom}.
+     */
+    function safeTransferFrom(address from, address to, uint256 tokenId) public override {
+        // safeTransferFrom(from, to, tokenId, "");
+        // *** why it causes error?***
     }
 
     /**
@@ -73,27 +97,13 @@ contract ERC721 is IERC721 {
      *
      * Emits a {Transfer} event.
      */
-    function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) public virtual override {
+    function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) public override {
+        require(is_owner_operator(msg.sender, ownerOf(tokenId)), "ERC721.sol: caller is not a owner or approved operator");
 
-    }
+        // implment some steps for _saftetransfer probably checking the received or not
 
-   /**
-     * @dev Transfers `tokenId` token from `from` to `to`.
-     *
-     * WARNING: Usage of this method is discouraged, use {safeTransferFrom} whenever possible.
-     *
-     * Requirements:
-     *
-     * - `from` cannot be the zero address.
-     * - `to` cannot be the zero address.
-     * - `tokenId` token must be owned by `from`.
-     * - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}.
-     *
-     * Emits a {Transfer} event.
-     */
-    function transferFrom(address from, address to, uint256 tokenId) public override {
-    }
- 
+        _transfer(from, to, tokenId);
+    } 
 
     /**
      * @dev Gives permission to `to` to transfer `tokenId` token to another account.
