@@ -18,6 +18,8 @@ contract ERC721 is IERC721 {
 
     mapping (uint256 => string) private _tokenURIs;
 
+    mapping (address => mapping (address => bool)) private _operatorApprovals;
+
     uint256 private _tokenIdcnt = 0;
 
     /**
@@ -42,7 +44,9 @@ contract ERC721 is IERC721 {
 
     function _transfer(address from, address to, uint256 tokenId) internal {
         require(valid_addr(to), "ERC721.sol: to address is not valid");
-        require(ownerOf(tokenId) == from, "ERC721.sol: the token is not beloning to from address");
+        require(from == ownerOf(tokenId), "ERC721.sol: the token is not beloning to from address");
+
+        approve(address(0), tokenId);
 
         _tokenIdtoOwner[tokenId] = to;
 
@@ -50,6 +54,10 @@ contract ERC721 is IERC721 {
         _balances[to]++;
         
         emit Transfer(from, to, tokenId);
+    }
+
+
+    function safeTransferFrom(address from, address to, uint256 tokenId) public virtual override {
     }
 
     /**
@@ -65,24 +73,8 @@ contract ERC721 is IERC721 {
      *
      * Emits a {Transfer} event.
      */
-    function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) public override {
-    }
+    function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) public virtual override {
 
-    /**
-     * @dev Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients
-     * are aware of the ERC721 protocol to prevent tokens from being forever locked.
-     *
-     * Requirements:
-     *
-     * - `from` cannot be the zero address.
-     * - `to` cannot be the zero address.
-     * - `tokenId` token must exist and be owned by `from`.
-     * - If the caller is not `from`, it must be have been allowed to move this token by either {approve} or {setApprovalForAll}.
-     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.
-     *
-     * Emits a {Transfer} event.
-     */
-    function safeTransferFrom(address from, address to, uint256 tokenId) public override {
     }
 
    /**
@@ -117,6 +109,10 @@ contract ERC721 is IERC721 {
      * Emits an {Approval} event.
      */
     function approve(address to, uint256 tokenId) public override {
+        require(msg.sender == ownerOf(tokenId));
+        _tokenApprovals[tokenId] = to;
+
+        emit Approval(ownerOf(tokenId), to, tokenId);
     }
 
     /**
@@ -130,6 +126,11 @@ contract ERC721 is IERC721 {
      * Emits an {ApprovalForAll} event.
      */
     function setApprovalForAll(address operator, bool approved) public override {
+        require(msg.sender != operator, "ERC721.sol: giving approvals itself");
+
+        _operatorApprovals[msg.sender][operator] = approved;
+
+        emit ApprovalForAll(msg.sender, operator, approved);
     }
 
     /**
@@ -140,6 +141,9 @@ contract ERC721 is IERC721 {
      * - `tokenId` must exist.
      */
     function getApproved(uint256 tokenId) public view override returns (address operator) {
+        require(valid_tokenId(tokenId), "ERC721.sol: toeknId is not valid ");
+
+        return _tokenApprovals[tokenId];
     }
 
     /**
@@ -148,6 +152,10 @@ contract ERC721 is IERC721 {
      * See {setApprovalForAll}
      */
     function isApprovedForAll(address owner, address operator) public view override returns (bool) {
+        if (_operatorApprovals[owner][operator]) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -166,6 +174,8 @@ contract ERC721 is IERC721 {
 
         _tokenIdtoOwner[_tokenId] = _owner;
         _balances[_owner]++;
+
+        emit Transfer(address(0), _owner, _tokenId);
     }
 
     /**
@@ -177,7 +187,7 @@ contract ERC721 is IERC721 {
      *
      * Emits a {Transfer} event.
      */
-    function _safeMint(address _owner, string memory _uri) public virtual {
+    function safeMint(address _owner, string memory _uri) public virtual {
         require(valid_addr(_owner), "ERC721.sol: _owner address is not valid");
         uint256 new_tokenId = _tokenIdcnt;
         _tokenIdcnt++;
@@ -198,6 +208,10 @@ contract ERC721 is IERC721 {
 
     function valid_tokenId(uint256 _tokenId) private view returns (bool) {
         return _tokenIdtoOwner[_tokenId] != address(0);
+    }
+
+    function is_owner_operator(address addr, address owner) private view returns (bool) {
+        return (addr == owner || _operatorApprovals[owner][addr]);
     }
 
 }
