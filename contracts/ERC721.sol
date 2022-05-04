@@ -72,7 +72,7 @@ contract ERC721 is IERC721 {
      */
     function transferFrom(address from, address to, uint256 tokenId) public override {
         require(is_owner_operator(msg.sender, ownerOf(tokenId)), "ERC721.sol: caller is not a owner or approved operator");
-
+        
         _transfer(from, to, tokenId);
 
     }
@@ -80,8 +80,7 @@ contract ERC721 is IERC721 {
      * @dev See {IERC721-safeTransferFrom}.
      */
     function safeTransferFrom(address from, address to, uint256 tokenId) public override {
-        // safeTransferFrom(from, to, tokenId, "");
-        // *** why it causes error?***
+        safeTransferFrom(from, to, tokenId, "");
     }
 
     /**
@@ -97,7 +96,7 @@ contract ERC721 is IERC721 {
      *
      * Emits a {Transfer} event.
      */
-    function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) public override {
+    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data) public override {
         require(is_owner_operator(msg.sender, ownerOf(tokenId)), "ERC721.sol: caller is not a owner or approved operator");
 
         // implment some steps for _saftetransfer probably checking the received or not
