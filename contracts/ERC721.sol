@@ -3,9 +3,10 @@
 pragma solidity ^0.8.0;
 
 import "./IERC721.sol";
+import "./IERC721Metadata.sol";
 import "./SafeMath.sol";
 
-contract ERC721 is IERC721 {
+contract ERC721 is IERC721, IERC721Metadata {
 
     using SafeMath for uint256;
     
@@ -21,6 +22,38 @@ contract ERC721 is IERC721 {
     mapping (address => mapping (address => bool)) private _operatorApprovals;
 
     uint256 private _tokenIdcnt = 0;
+
+    // Token name
+    string private _name;
+
+    // Token symbol
+    string private _symbol;
+
+    constructor (string memory name_, string memory symbol_) {
+        _name = name_;
+        _symbol = symbol_;
+    }
+
+    /**
+     * @dev Returns the token collection name.
+     */
+    function name() public view override returns (string memory){
+        return _name;
+    }
+
+    /**
+     * @dev Returns the token collection symbol.
+     */
+    function symbol() public view override returns (string memory){
+        return _symbol;
+    }
+
+    /**
+     * @dev Returns the Uniform Resource Identifier (URI) for `tokenId` token.
+     */
+    function tokenURI(uint256 tokenId) public view override returns (string memory){
+        return _tokenURIs[tokenId];
+    }
 
     /**
      * @dev Returns the number of tokens in ``owner``'s account.
@@ -72,7 +105,7 @@ contract ERC721 is IERC721 {
      */
     function transferFrom(address from, address to, uint256 tokenId) public override {
         require(is_owner_operator(msg.sender, ownerOf(tokenId)), "ERC721.sol: caller is not a owner or approved operator");
-        
+
         _transfer(from, to, tokenId);
 
     }
@@ -204,6 +237,16 @@ contract ERC721 is IERC721 {
         _tokenURIs[new_tokenId] = _uri;
 
         _mint(_owner, new_tokenId);
+    }
+
+    function _burn (uint256 tokenId) internal virtual {
+        require(msg.sender == ownerOf(tokenId));
+        _tokenIdtoOwner[tokenId] = address(0);
+
+        _balances[msg.sender]--;
+
+        emit Transfer(msg.sender, address(0), tokenId);
+
     }
 
     function supportsInterface(bytes4 interfaceId) public view override returns (bool){
