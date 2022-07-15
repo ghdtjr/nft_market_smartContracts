@@ -265,5 +265,4 @@ contract ERC721 is IERC721, IERC721Metadata {
     function is_owner_operator(address addr, address owner) private view returns (bool) {
         return (addr == owner || _operatorApprovals[owner][addr]);
     }
-
 }
